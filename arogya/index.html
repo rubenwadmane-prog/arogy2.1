@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arogya – Your AI Health Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red:#c0272d;--red2:#e03535;--red3:#f16060;
+    --redlight:#fff0f0;--redpale:#ffe4e4;
+    --dark:#1a0a0a;--text:#2a0e0e;--muted:#8a5a5a;
+    --white:#ffffff;--offwhite:#fafafa;--border:#f0d4d4;
+    --shadow:0 8px 40px rgba(192,39,45,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text);min-height:100vh;overflow-x:hidden}
+  .page{min-height:100vh;display:flex;flex-direction:column}
+
+  /* LOGIN */
+  #loginPage{background:var(--dark);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(192,39,45,0.28) 0%,transparent 70%);pointer-events:none}
+  .login-card{position:relative;z-index:2;background:rgba(255,255,255,.05);border:1px solid rgba(240,96,96,.22);border-radius:24px;padding:52px 48px;width:100%;max-width:440px;backdrop-filter:blur(14px)}
+  .logo-area{text-align:center;margin-bottom:36px}
+  .logo-icon{width:70px;height:70px;background:linear-gradient(135deg,var(--red),var(--red2));border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:34px;box-shadow:0 0 48px rgba(192,39,45,.45)}
+  .logo-name{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;color:var(--white);letter-spacing:-1px}
+  .logo-tagline{font-size:12px;color:var(--red3);letter-spacing:2.5px;text-transform:uppercase;margin-top:5px}
+  .form-group{margin-bottom:18px}
+  .form-group label{display:block;font-size:12px;font-weight:600;color:var(--red3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+  .form-group input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(240,96,96,.22);border-radius:10px;padding:14px 16px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;transition:all .2s;outline:none}
+  .form-group input::placeholder{color:rgba(255,255,255,.28)}
+  .form-group input:focus{border-color:var(--red3);background:rgba(240,96,96,.09)}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--red),var(--red2));color:var(--white);border:none;border-radius:10px;padding:15px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .25s}
+  .btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(192,39,45,.55)}
+  .btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .login-divider{text-align:center;color:rgba(255,255,255,.18);font-size:13px;margin:18px 0;position:relative}
+  .login-divider::before,.login-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:rgba(255,255,255,.1)}
+  .login-divider::before{left:0}.login-divider::after{right:0}
+  .btn-google{width:100%;background:var(--white);border:none;border-radius:10px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#1a1a1a;transition:all .2s}
+  .btn-google:hover{background:#f5f5f5;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.18)}
+  .btn-google svg{width:20px;height:20px;flex-shrink:0}
+  .btn-guest{width:100%;background:transparent;border:1px solid rgba(240,96,96,.3);color:var(--red3);border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;margin-top:10px}
+  .btn-guest:hover{background:rgba(240,96,96,.08)}
+  .auth-toggle{text-align:center;margin-top:18px;font-size:13px;color:rgba(255,255,255,.4)}
+  .auth-toggle a{color:var(--red3);cursor:pointer;text-decoration:underline}
+  .login-error{color:#ff9a8a;font-size:13px;margin-top:8px;text-align:center;display:none;padding:8px;background:rgba(255,100,80,.08);border-radius:8px}
+  .register-fields{display:none}
+
+  /* APP HEADER */
+  #appPage{display:none;flex-direction:column;background:var(--offwhite)}
+  .app-header{background:var(--red);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(192,39,45,.3)}
+  .header-logo{display:flex;align-items:center;gap:12px}
+  .header-logo-icon{width:38px;height:38px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .header-logo-name{font-family:'Playfair Display',serif;font-size:23px;font-weight:700;color:var(--white)}
+  .header-right{display:flex;align-items:center;gap:12px}
+  .status-badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:20px}
+  .status-badge.online{background:rgba(255,255,255,.2);color:var(--white)}
+  .status-badge.offline{background:rgba(0,0,0,.25);color:#ffbaba}
+  .status-dot{width:7px;height:7px;border-radius:50%}
+  .status-badge.online .status-dot{background:#fff;animation:pulse 2s infinite}
+  .status-badge.offline .status-dot{background:#ffbaba}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+  .loc-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.7);padding:4px 10px;background:rgba(255,255,255,.1);border-radius:20px}
+  .user-pill{display:flex;align-items:center;gap:8px}
+  .user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.4);object-fit:cover}
+  .user-avatar-fallback{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--white);border:2px solid rgba(255,255,255,.3)}
+  .user-name{color:var(--white);font-size:14px;font-weight:500}
+  .btn-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:var(--white);border-radius:8px;padding:7px 14px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+  .btn-logout:hover{background:rgba(255,255,255,.25)}
+
+  /* TABS */
+  .tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--white);padding:0 24px;max-width:860px;margin:0 auto;width:100%}
+  .tab-btn{background:none;border:none;padding:14px 20px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+  .tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+  .tab-content{display:none}
+  .tab-content.active{display:block}
+
+  /* MAIN */
+  .app-main{flex:1;max-width:860px;margin:0 auto;width:100%;padding:28px 24px}
+  .hero-section{text-align:center;margin-bottom:28px}
+  .hero-section h1{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,34px);font-weight:900;color:var(--dark);line-height:1.2;margin-bottom:8px}
+  .hero-section h1 span{color:var(--red)}
+  .hero-section p{color:var(--muted);font-size:14px;max-width:460px;margin:0 auto}
+
+  /* VOICE CARD */
+  .voice-card{background:var(--white);border-radius:20px;padding:28px;box-shadow:var(--shadow);margin-bottom:20px;border:1.5px solid var(--border);transition:border-color .3s}
+  .voice-card.recording{border-color:var(--red2);animation:cardPulse 1.5s ease-in-out infinite}
+  @keyframes cardPulse{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 8px 40px rgba(192,39,45,.18)}}
+  .voice-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);margin-bottom:20px}
+  .voice-area{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .mic-btn{width:80px;height:80px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--red),var(--red2));color:var(--white);font-size:30px;cursor:pointer;transition:all .25s;box-shadow:0 6px 28px rgba(192,39,45,.38)}
+  .mic-btn:hover{transform:scale(1.07)}
+  .mic-btn.active{background:linear-gradient(135deg,#7a0a0a,var(--red));animation:micPulse 1s infinite}
+  @keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+  .mic-label{font-size:13px;color:var(--muted);font-weight:500}
+  .voice-waves{display:flex;align-items:center;gap:4px;height:28px;opacity:0;transition:opacity .3s}
+  .voice-waves.active{opacity:1}
+  .wave-bar{width:4px;background:var(--red);border-radius:4px;animation:wave 1s ease-in-out infinite}
+  .wave-bar:nth-child(1){height:8px}.wave-bar:nth-child(2){height:18px;animation-delay:.1s}
+  .wave-bar:nth-child(3){height:26px;animation-delay:.2s}.wave-bar:nth-child(4){height:18px;animation-delay:.3s}
+  .wave-bar:nth-child(5){height:8px;animation-delay:.4s}
+  @keyframes wave{0%,100%{transform:scaleY(.6)}50%{transform:scaleY(1)}}
+  .transcribed-text{width:100%;background:var(--redlight);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;font-size:15px;min-height:68px;color:var(--text);line-height:1.6;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;transition:border-color .2s}
+  .transcribed-text:focus{border-color:var(--red2)}
+  .voice-actions{display:flex;gap:10px;width:100%}
+  .btn-analyze{flex:1;background:linear-gradient(135deg,var(--red),var(--red2));color:var(--white);border:none;border-radius:10px;padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-analyze:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(192,39,45,.38)}
+  .btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn-clear-sym{background:var(--redlight);border:1.5px solid var(--border);color:var(--muted);border-radius:10px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;cursor:pointer}
+  .mic-error{background:var(--redlight);border:1px solid var(--redpale);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);display:none;text-align:center;width:100%;line-height:1.6}
+  .mic-error.show{display:block}
+
+  /* CHAT */
+  .chat-card{background:var(--white);border-radius:20px;box-shadow:var(--shadow);margin-bottom:20px;border:1.5px solid var(--border);overflow:hidden}
+  .chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .chat-header-icon{width:36px;height:36px;background:var(--redlight);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .chat-header-title{font-weight:600;font-size:14px;color:var(--dark)}
+  .chat-header-sub{font-size:12px;color:var(--muted)}
+  .chat-mode-badge{margin-left:auto;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+  .chat-mode-badge.online{background:var(--redlight);color:var(--red)}
+  .chat-mode-badge.offline{background:#fff8f0;color:#b06820}
+  .chat-messages{height:320px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .chat-bubble{max-width:80%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6}
+  .chat-bubble.user{background:var(--red);color:var(--white);align-self:flex-end;border-bottom-right-radius:4px}
+  .chat-bubble.doctor{background:var(--redlight);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
+  .chat-bubble.typing{background:var(--redlight);color:var(--muted);align-self:flex-start;font-style:italic}
+  .chat-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+  .chat-input{flex:1;background:var(--redlight);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;resize:none;height:44px;line-height:1.4}
+  .chat-input:focus{border-color:var(--red2)}
+  .btn-chat-mic{background:var(--redlight);border:1.5px solid var(--border);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all .2s}
+  .btn-chat-mic.active{background:var(--red);border-color:var(--red);color:var(--white)}
+  .btn-send{background:var(--red);color:var(--white);border:none;border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;transition:all .2s}
+  .btn-send:hover{background:var(--red2)}
+  .btn-send:disabled{opacity:.5;cursor:not-allowed}
+  .btn-new-chat{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0}
+  .btn-new-chat:hover{color:var(--red)}
+
+  /* RESULTS */
+  .result-section{display:none;flex-direction:column;gap:16px;animation:fadeUp .4s ease}
+  .result-section.show{display:flex}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .result-card{background:var(--white);border-radius:18px;padding:24px;box-shadow:var(--shadow);border:1.5px solid var(--border)}
+  .result-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .result-card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--redlight)}
+  .result-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted)}
+  .result-card-body{font-size:14px;line-height:1.7;color:var(--text)}
+  .result-card-body strong{color:var(--dark);font-weight:600}
+  .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:6px}
+  .doc-card{background:var(--redlight);border-radius:14px;padding:16px;border:1.5px solid var(--border);transition:all .2s}
+  .doc-card:hover{border-color:var(--red2);transform:translateY(-2px)}
+  .doc-card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+  .doc-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red3));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .doc-name{font-weight:600;font-size:14px;color:var(--dark)}
+  .doc-spec{font-size:11px;color:var(--muted);margin-top:2px}
+  .doc-tags{display:flex;flex-wrap:wrap;gap:5px}
+  .doc-tag{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:2px 9px;font-size:11px;color:var(--muted);font-weight:500}
+  .doc-tag.near{background:rgba(192,39,45,.07);border-color:rgba(192,39,45,.2);color:var(--red)}
+  .doc-tag.best{background:#fff8ee;border-color:#f0d080;color:#8a6500}
+  .doc-rating{font-size:12px;color:#c09020;margin-top:7px;font-weight:600}
+  .remedy-steps{counter-reset:step;list-style:none;padding:0;margin-top:8px}
+  .remedy-steps li{counter-increment:step;display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+  .remedy-steps li::before{content:counter(step);min-width:24px;height:24px;background:var(--red);color:var(--white);border-radius:7px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .warning-card{background:#fffbf2;border:1.5px solid #f0d9a0;border-radius:18px;padding:24px;display:none}
+  .warning-card.show{display:block}
+
+  /* HISTORY */
+  .history-section{margin-top:20px}
+  .history-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .history-header h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark)}
+  .btn-clear-hist{background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+  .btn-clear-hist:hover{color:var(--red)}
+  .history-list{display:flex;flex-direction:column;gap:8px}
+  .hist-item{background:var(--white);border-radius:12px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:all .2s;border:1.5px solid transparent;cursor:pointer}
+  .hist-item:hover{border-color:var(--red2);transform:translateX(3px)}
+  .hist-icon{width:34px;height:34px;border-radius:9px;background:var(--redlight);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .hist-content{flex:1;min-width:0}
+  .hist-query{font-size:13px;font-weight:500;color:var(--dark);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-meta{font-size:11px;color:var(--muted)}
+  .hist-badge{padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0;align-self:center}
+  .hist-badge.online-b{background:var(--redlight);color:var(--red)}
+  .hist-badge.offline-b{background:#fff8f0;color:#b06820}
+  .no-history{text-align:center;padding:28px;color:var(--muted);font-size:14px}
+
+  /* LOADING */
+  .loading-overlay{display:none;flex-direction:column;align-items:center;justify-content:center;padding:36px;gap:14px}
+  .loading-overlay.show{display:flex}
+  .spinner{width:40px;height:40px;border:3px solid var(--redpale);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:14px;color:var(--muted);font-weight:500}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark);color:var(--white);padding:11px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;border:1px solid rgba(240,96,96,.2);max-width:300px;text-align:center}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:600px){
+    .login-card{padding:32px 18px;margin:14px}
+    .app-main{padding:18px 12px}
+    .voice-card{padding:20px 14px}
+    .doc-grid{grid-template-columns:1fr}
+    .user-name,.loc-badge{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginPage" class="page">
+  <div class="login-bg"></div>
+  <div class="login-card">
+    <div class="logo-area">
+      <div class="logo-icon">🩺</div>
+      <div class="logo-name">Arogya</div>
+      <div class="logo-tagline">AI Health Companion</div>
+    </div>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+    <div class="login-divider">or sign in with email</div>
+    <div class="form-group register-fields" id="nameGroup">
+      <label>Full Name</label>
+      <input type="text" id="loginName" placeholder="Your name"/>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginUser" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="btn-login" id="authBtn" onclick="doAuth()">Sign In →</button>
+    <button class="btn-guest" onclick="doGuestLogin()">Continue as Guest</button>
+    <div class="auth-toggle">
+      <span id="authToggleText">Don't have an account?</span>
+      <a onclick="toggleAuthMode()"><span id="authToggleLink">Register</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="appPage" class="page">
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="header-logo-icon">🩺</div>
+      <div class="header-logo-name">Arogya</div>
+    </div>
+    <div class="header-right">
+      <div class="status-badge online" id="statusBadge">
+        <div class="status-dot"></div>
+        <span id="statusText">Online</span>
+      </div>
+      <div class="loc-badge" id="locBadge">📍 Locating…</div>
+      <div class="user-pill">
+        <div class="user-avatar-fallback" id="userAvatarFallback">U</div>
+        <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none" onerror="this.style.display='none'"/>
+        <span class="user-name" id="headerUserName"></span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <div style="background:var(--white);border-bottom:2px solid var(--border);">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('analyse')">🔍 Analyse</button>
+      <button class="tab-btn" onclick="switchTab('chat')">💬 Chat with Doctor</button>
+      <button class="tab-btn" onclick="switchTab('history')">📋 History</button>
+    </div>
+  </div>
+
+  <main class="app-main">
+    <div class="hero-section">
+      <h1>How are you feeling,<br/><span id="greetName">friend</span>?</h1>
+      <p>Describe your symptoms by voice or text — Arogya will analyse and connect you with the right help.</p>
+    </div>
+
+    <!-- ── TAB: ANALYSE ── -->
+    <div id="tab-analyse" class="tab-content active">
+      <div class="voice-card" id="voiceCard">
+        <div class="voice-card-title">Describe your symptoms</div>
+        <div class="voice-area">
+          <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+          <div class="voice-waves" id="voiceWaves">
+            <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            <div class="wave-bar"></div><div class="wave-bar"></div>
+          </div>
+          <div class="mic-label" id="micLabel">Tap mic to speak your symptoms</div>
+          <div class="mic-error" id="micError"></div>
+          <textarea class="transcribed-text" id="symptomText" placeholder="Or type your symptoms… e.g. 'Severe headache and fever for 2 days'" rows="3"></textarea>
+          <div class="voice-actions">
+            <button class="btn-analyze" id="analyzeBtn" onclick="analyzeSymptoms()">✨ Analyse &amp; Find Help</button>
+            <button class="btn-clear-sym" onclick="clearAll()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Analysing your symptoms…</div>
+      </div>
+
+      <div class="result-section" id="resultSection">
+        <div class="result-card">
+          <div class="result-card-header"><div class="result-card-icon">🧠</div><div class="result-card-title">AI Health Summary</div></div>
+          <div class="result-card-body" id="summaryBody"></div>
+        </div>
+        <div class="result-card" id="doctorCard">
+          <div class="result-card-header"><div class="result-card-icon">👨‍⚕️</div><div class="result-card-title">Recommended Doctors Near You</div></div>
+          <div class="result-card-body">
+            <p id="doctorIntro" style="margin-bottom:12px;color:var(--muted);font-size:13px"></p>
+            <div class="doc-grid" id="docGrid"></div>
+          </div>
+        </div>
+        <div class="result-card" id="remedyCard">
+          <div class="result-card-header"><div class="result-card-icon">🌿</div><div class="result-card-title">Home Remedies &amp; Self-Care</div></div>
+          <div class="result-card-body" id="remedyBody"></div>
+        </div>
+        <div class="warning-card" id="warningCard">
+          <div class="result-card-header"><div class="result-card-icon" style="background:#fff8ee">⚠️</div><div class="result-card-title" style="color:#8a6500">Important Notice</div></div>
+          <div class="result-card-body" id="warningBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: CHAT ── -->
+    <div id="tab-chat" class="tab-content">
+      <div class="chat-card">
+        <div class="chat-header">
+          <div class="chat-header-icon">👨‍⚕️</div>
+          <div>
+            <div class="chat-header-title">Dr. Arogya</div>
+            <div class="chat-header-sub">AI Health Assistant</div>
+          </div>
+          <div class="chat-mode-badge online" id="chatModeBadge">Online</div>
+          <button class="btn-new-chat" onclick="newChat()" style="margin-left:8px">+ New chat</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-bubble doctor">👋 Hello! I'm Dr. Arogya. Tell me what's bothering you — describe your symptoms and I'll help you understand what might be going on and what to do next.</div>
+        </div>
+        <div class="chat-input-row">
+          <button class="btn-chat-mic" id="chatMicBtn" onclick="toggleChatMic()" title="Speak">🎤</button>
+          <textarea class="chat-input" id="chatInput" placeholder="Type your message…" rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+          <button class="btn-send" id="sendBtn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: HISTORY ── -->
+    <div id="tab-history" class="tab-content">
+      <div class="history-section">
+        <div class="history-header">
+          <h2>Past Consultations</h2>
+          <button class="btn-clear-hist" onclick="clearHistory()">Clear All</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="no-history">No consultations yet.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+// On Railway: set this to your Railway domain e.g. https://arogya-production.up.railway.app/api
+const API = window.location.origin + '/api';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let isOnline     = navigator.onLine;
+let isRecording  = false;
+let recognition  = null;
+let currentUser  = null;
+let authMode     = 'login';
+let userLocation = null;   // { lat, lng, city }
+let chatHistory  = [];     // [{role:'user'|'assistant', content:'...'}]
+let chatMicActive = false;
+let chatRecognition = null;
+
+// ── Online / offline ──────────────────────────────────────────────────────────
+function updateOnlineStatus() {
+  isOnline = navigator.onLine;
+  const b = document.getElementById('statusBadge'), t = document.getElementById('statusText');
+  b.className = 'status-badge ' + (isOnline ? 'online' : 'offline');
+  t.textContent = isOnline ? 'Online' : 'Offline';
+  // Update chat mode badge
+  const cm = document.getElementById('chatModeBadge');
+  cm.textContent = isOnline ? 'Online' : 'Offline (Ollama)';
+  cm.className = 'chat-mode-badge ' + (isOnline ? 'online' : 'offline');
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ── Geolocation ───────────────────────────────────────────────────────────────
+function requestLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById('locBadge').textContent = '📍 Location unavailable';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const lat = pos.coords.latitude.toFixed(5);
+      const lng = pos.coords.longitude.toFixed(5);
+      userLocation = { lat, lng, city: null };
+
+      // Reverse geocode using browser-friendly free API
+      try {
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+        const d = await r.json();
+        const city = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'India';
+        userLocation.city = city;
+        document.getElementById('locBadge').textContent = `📍 ${city}`;
+      } catch (e) {
+        document.getElementById('locBadge').textContent = `📍 ${lat},${lng}`;
+      }
+    },
+    err => {
+      document.getElementById('locBadge').textContent = '📍 Location denied';
+      userLocation = null;
+    },
+    { timeout: 8000, enableHighAccuracy: false }
+  );
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'history') loadHistory();
+}
+
+// ── OAuth redirect token pickup ───────────────────────────────────────────────
+(function checkOAuthRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+  if (token) {
+    localStorage.setItem('arogya_token', token);
+    window.history.replaceState({}, '', window.location.pathname);
+    verifyAndLaunch(token);
+  } else {
+    const saved = localStorage.getItem('arogya_token');
+    if (saved) verifyAndLaunch(saved);
+  }
+})();
+
+async function verifyAndLaunch(token) {
+  try {
+    const res = await apiFetch('/auth/me', { method: 'GET' }, token);
+    if (res.user) { currentUser = res.user; launchApp(); }
+  } catch (e) { localStorage.removeItem('arogya_token'); }
+}
+
+// ── API helper ────────────────────────────────────────────────────────────────
+async function apiFetch(path, options = {}, overrideToken = null) {
+  const token = overrideToken || localStorage.getItem('arogya_token');
+  const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res  = await fetch(API + path, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  const isReg = authMode === 'register';
+  document.getElementById('nameGroup').style.display    = isReg ? 'block' : 'none';
+  document.getElementById('authBtn').textContent        = isReg ? 'Create Account →' : 'Sign In →';
+  document.getElementById('authToggleText').textContent = isReg ? 'Already have an account?' : "Don't have an account?";
+  document.getElementById('authToggleLink').textContent = isReg ? 'Sign In' : 'Register';
+  document.getElementById('loginError').style.display   = 'none';
+}
+
+async function doAuth() {
+  const email = document.getElementById('loginUser').value.trim();
+  const pass  = document.getElementById('loginPass').value.trim();
+  if (!email || !pass) { showLoginError('Email and password are required'); return; }
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true; btn.textContent = 'Please wait…';
+  try {
+    let data;
+    if (authMode === 'register') {
+      const name = document.getElementById('loginName').value.trim();
+      if (!name) { showLoginError('Name is required'); return; }
+      data = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password: pass }) });
+    } else {
+      data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password: pass }) });
+    }
+    localStorage.setItem('arogya_token', data.token);
+    currentUser = data.user;
+    launchApp();
+  } catch (err) {
+    showLoginError(err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Sign In →' : 'Create Account →';
+  }
+}
+
+function showLoginError(msg) {
+  const e = document.getElementById('loginError');
+  e.textContent = msg; e.style.display = 'block';
+}
+function loginWithGoogle() { window.location.href = API + '/auth/google'; }
+function doGuestLogin() { currentUser = { name: 'Guest', email: 'guest', provider: 'guest' }; launchApp(); }
+
+function launchApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display   = 'flex';
+  const name = currentUser.name === 'Guest' ? 'friend' : currentUser.name.split(' ')[0];
+  document.getElementById('greetName').textContent    = name;
+  document.getElementById('headerUserName').textContent = currentUser.name;
+  if (currentUser.avatar) {
+    const img = document.getElementById('userAvatar');
+    img.src = currentUser.avatar; img.style.display = 'block';
+    document.getElementById('userAvatarFallback').style.display = 'none';
+  } else {
+    document.getElementById('userAvatarFallback').textContent = (currentUser.name || 'U')[0].toUpperCase();
+  }
+  requestLocation();
+  loadHistory();
+}
+
+async function doLogout() {
+  try { await apiFetch('/auth/logout', { method: 'POST' }); } catch (e) {}
+  localStorage.removeItem('arogya_token');
+  currentUser = null; chatHistory = [];
+  document.getElementById('appPage').style.display  = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  clearAll();
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
+
+// ── Mic (analyse tab) ─────────────────────────────────────────────────────────
+function toggleMic() { isRecording ? stopMic() : startMic(); }
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showMicError('Voice input requires <strong>Chrome</strong> or <strong>Edge</strong>.'); return; }
+  hideMicError();
+  recognition = new SR();
+  recognition.lang = 'en-IN'; recognition.continuous = true; recognition.interimResults = true;
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('active');
+    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById('voiceWaves').classList.add('active');
+    document.getElementById('micLabel').textContent = 'Listening… speak now';
+    document.getElementById('voiceCard').classList.add('recording');
+  };
+  recognition.onresult = e => {
+    let t = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
+    document.getElementById('symptomText').value = t;
+  };
+  recognition.onerror = e => {
+    stopMic();
+    if (e.error === 'not-allowed') showMicError('Mic blocked — click 🔒 in address bar → allow microphone → refresh.');
+    else if (e.error === 'no-speech') showMicError('No speech detected. Try again.');
+    else showMicError('Mic error: ' + e.error + '. Type instead.');
+  };
+  recognition.onend = () => stopMic();
+  try { recognition.start(); } catch (err) { showMicError('Could not start mic. Open in a new Chrome tab.'); }
+}
+function stopMic() {
+  isRecording = false;
+  if (recognition) { try { recognition.stop(); } catch (e) {} }
+  document.getElementById('micBtn').classList.remove('active');
+  document.getElementById('micBtn').textContent = '🎤';
+  document.getElementById('voiceWaves').classList.remove('active');
+  document.getElementById('micLabel').textContent = 'Tap mic to speak your symptoms';
+  document.getElementById('voiceCard').classList.remove('recording');
+}
+function showMicError(m) { const e = document.getElementById('micError'); e.innerHTML = '⚠️ ' + m; e.classList.add('show'); }
+function hideMicError() { document.getElementById('micError').classList.remove('show'); }
+
+// ── Analyse ───────────────────────────────────────────────────────────────────
+async function analyzeSymptoms() {
+  const text = document.getElementById('symptomText').value.trim();
+  if (!text) { showToast('Please describe your symptoms first.'); return; }
+  stopMic();
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('loadingText').textContent = isOnline
+    ? 'Analysing & finding doctors near you…'
+    : 'Generating home remedy advice via Ollama…';
+
+  try {
+    const mode = isOnline ? 'online' : 'offline';
+
+    // ALL requests go through the backend — never directly to Anthropic from client
+    const res = await apiFetch('/ai/analyse', {
+      method: 'POST',
+      body: JSON.stringify({ symptoms: text, mode, location: userLocation })
+    });
+    const result = res.result;
+
+    mode === 'online' ? renderOnline(result) : renderOffline(result);
+
+    // Save consultation (logged-in users only)
+    if (currentUser.provider !== 'guest') {
+      apiFetch('/consultations', {
+        method: 'POST',
+        body: JSON.stringify({
+          symptoms: text, mode,
+          summary:    result.summary,
+          conditions: result.possibleConditions || [],
+          specialist: result.specialistType,
+          urgency:    result.urgency,
+          aiResponse: result,
+          doctors:    result.doctors || [],
+          location:   userLocation,
+        })
+      }).catch(() => {});
+    }
+  } catch (err) {
+    showToast('Error: ' + (err.message || 'Something went wrong.'));
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderOnline(d) {
+  document.getElementById('summaryBody').innerHTML = `
+    <strong>${(d.possibleConditions || []).join(', ') || 'See below'}</strong>
+    <p style="margin-top:8px">${d.summary}</p>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">
+      Specialist: <strong style="color:var(--red)">${d.specialistType}</strong> &nbsp;|&nbsp;
+      Urgency: <strong style="color:${urgCol(d.urgency)}">${cap(d.urgency)}</strong>
+      ${userLocation?.city ? '&nbsp;|&nbsp; 📍 ' + userLocation.city : ''}
+    </p>`;
+  document.getElementById('doctorIntro').textContent = `Best ${d.specialistType} near ${userLocation?.city || 'you'}:`;
+  const grid = document.getElementById('docGrid'); grid.innerHTML = '';
+  (d.doctors || []).forEach(doc => {
+    grid.innerHTML += `<div class="doc-card"><div class="doc-card-top"><div class="doc-avatar">👨‍⚕️</div><div><div class="doc-name">${doc.name}</div><div class="doc-spec">${doc.spec || doc.specialisation}</div></div></div><div class="doc-tags"><span class="doc-tag ${doc.type === 'nearby' ? 'near' : 'best'}">${doc.type === 'nearby' ? '📍 Nearby' : '⭐ Best'}</span><span class="doc-tag">🏥 ${doc.hospital}</span><span class="doc-tag">📏 ${doc.distance}</span></div><div class="doc-rating">⭐ ${doc.rating} / 5.0</div></div>`;
+  });
+  document.getElementById('doctorCard').style.display = 'block';
+  document.getElementById('remedyCard').style.display = 'none';
+  setWarning(d.warning); showResults();
+}
+
+function renderOffline(d) {
+  document.getElementById('summaryBody').innerHTML = `
+    <strong>Likely: ${d.likelyCause || 'See below'}</strong>
+    <p style="margin-top:8px">${d.summary}</p>
+    <p style="margin-top:8px;padding:8px 12px;background:var(--redlight);border-radius:8px;font-size:13px;color:var(--red)">
+      🌐 <strong>Offline mode</strong> — home remedy guidance via Ollama. See a doctor when possible.
+    </p>`;
+  const avoid = (d.avoidList || []).length ? `<p style="margin-top:12px"><strong>Avoid:</strong> ${d.avoidList.join(', ')}</p>` : '';
+  const seek  = d.seekDoctorIf ? `<p style="margin-top:10px;padding:8px 12px;background:#fff8ee;border-radius:8px;font-size:13px"><strong>⚠️ See a doctor if:</strong> ${d.seekDoctorIf}</p>` : '';
+  document.getElementById('remedyBody').innerHTML = `<ul class="remedy-steps">${(d.remedies || []).map(r => `<li><span>${r}</span></li>`).join('')}</ul>${avoid}${seek}`;
+  document.getElementById('remedyCard').style.display = 'block';
+  document.getElementById('doctorCard').style.display = 'none';
+  setWarning(d.warning); showResults();
+}
+
+function showResults() {
+  document.getElementById('resultSection').classList.add('show');
+  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function setWarning(w) {
+  const e = document.getElementById('warningCard');
+  if (w) { document.getElementById('warningBody').textContent = w; e.classList.add('show'); }
+  else e.classList.remove('show');
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+function newChat() {
+  chatHistory = [];
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML = '<div class="chat-bubble doctor">👋 Hello! I\'m Dr. Arogya. Tell me what\'s bothering you — describe your symptoms and I\'ll help you understand what might be going on and what to do next.</div>';
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = '44px';
+  appendBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+
+  const typingEl = appendBubble('typing', '…');
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const res = await apiFetch('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        messages:  chatHistory,
+        mode:      isOnline ? 'online' : 'offline',
+        location:  userLocation,
+      })
+    });
+    typingEl.remove();
+    const reply = res.reply || 'Sorry, I could not generate a response.';
+    appendBubble('doctor', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch (err) {
+    typingEl.remove();
+    appendBubble('doctor', '⚠️ Error: ' + err.message + '. Please try again.');
+  } finally {
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function appendBubble(role, text) {
+  const msgs = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'chat-bubble ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+// Chat mic
+function toggleChatMic() {
+  chatMicActive ? stopChatMic() : startChatMic();
+}
+function startChatMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('Voice input needs Chrome or Edge.'); return; }
+  chatRecognition = new SR();
+  chatRecognition.lang = 'en-IN'; chatRecognition.continuous = false; chatRecognition.interimResults = false;
+  chatRecognition.onstart  = () => { chatMicActive = true; document.getElementById('chatMicBtn').classList.add('active'); document.getElementById('chatMicBtn').textContent = '⏹'; };
+  chatRecognition.onresult = e => { document.getElementById('chatInput').value = e.results[0][0].transcript; };
+  chatRecognition.onerror  = () => stopChatMic();
+  chatRecognition.onend    = () => stopChatMic();
+  chatRecognition.start();
+}
+function stopChatMic() {
+  chatMicActive = false;
+  if (chatRecognition) { try { chatRecognition.stop(); } catch (e) {} }
+  document.getElementById('chatMicBtn').classList.remove('active');
+  document.getElementById('chatMicBtn').textContent = '🎤';
+}
+
+// Auto-resize chat textarea
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = '44px';
+  this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+
+// ── History ───────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  if (currentUser?.provider === 'guest') { renderHistory([]); return; }
+  try {
+    const data = await apiFetch('/consultations?limit=30');
+    renderHistory(data.consultations || []);
+  } catch (e) { renderHistory([]); }
+}
+
+function renderHistory(items) {
+  const list = document.getElementById('historyList');
+  if (!items.length) {
+    list.innerHTML = '<div class="no-history">No consultations yet. Use Analyse or Chat to get started.</div>';
+    return;
+  }
+  list.innerHTML = items.map(h => `
+    <div class="hist-item">
+      <div class="hist-icon">${h.mode === 'online' ? '🩺' : '🌿'}</div>
+      <div class="hist-content">
+        <div class="hist-query">${esc(h.symptoms || '')}</div>
+        <div class="hist-meta">${h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : ''} ${h.location?.city ? '· 📍 ' + h.location.city : ''}</div>
+      </div>
+      <span class="hist-badge ${h.mode === 'online' ? 'online-b' : 'offline-b'}">${cap(h.mode)}</span>
+    </div>`).join('');
+}
+
+async function clearHistory() {
+  if (currentUser?.provider === 'guest') { renderHistory([]); return; }
+  try {
+    await apiFetch('/consultations', { method: 'DELETE' });
+    renderHistory([]);
+    showToast('History cleared.');
+  } catch (e) { showToast('Failed to clear history.'); }
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('symptomText').value = '';
+  document.getElementById('resultSection').classList.remove('show');
+  document.getElementById('loadingOverlay').classList.remove('show');
+  hideMicError(); stopMic();
+}
+function showToast(m) {
+  const t = document.getElementById('toast'); t.textContent = m;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200);
+}
+function urgCol(u) { return { routine:'#2a9d2a', soon:'#c09020', urgent:'#d06020', emergency:'#c0272d' }[u] || 'var(--muted)'; }
+function cap(s)    { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function esc(s)    { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+</script>
+</body>
+</html>
