@@ -105,8 +105,19 @@ app.get('/api/health', (req, res) => {
 });
 
 // ─── Serve frontend static files ──────────────────────────────────────────────
-const frontendDist = path.join(__dirname, '../public');
+const frontendDist = path.join(process.cwd(), 'public');
 app.use(express.static(frontendDist));
+
+// SPA fallback — serve index.html for any non-API route
+app.get('*', (req, res) => {
+  const fs        = require('fs');
+  const indexFile = path.join(frontendDist, 'index.html');
+  if (fs.existsSync(indexFile)) {
+    res.sendFile(indexFile);
+  } else {
+    res.status(404).json({ error: 'Frontend not built yet' });
+  }
+});
 
 // SPA fallback — serve index.html for any non-API route
 app.get('*', (req, res) => {
@@ -147,3 +158,4 @@ connectDB()
   });
 
 module.exports = app;
+
