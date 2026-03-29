@@ -157,176 +157,38 @@ function callAnthropicChat(systemPrompt, messages) {
 }
 
 // ─── Ollama helpers ───────────────────────────────────────────────────────────
-
-function callOllama(prompt) {
-  return new Promise((resolve, reject) => {
-    const ollamaUrl  = process.env.OLLAMA_URL || 'http://localhost:11434';
-    const ollamaModel = process.env.OLLAMA_MODEL || 'llama3';
-    const url = new URL(ollamaUrl);
-
-    const payload = JSON.stringify({
-      model:  ollamaModel,
-      prompt: prompt,
-      stream: false,
-      options: { temperature: 0.3 },
-    });
-
-    const options = {
-      hostname: url.hostname,
-      port:     url.port || (url.protocol === 'https:' ? 443 : 80),
-      path:     '/api/generate',
-      method:   'POST',
-      headers:  {
-        'Content-Type':   'application/json',
-        'Content-Length': Buffer.byteLength(payload),
-      },
-    };
-
-    const transport = url.protocol === 'https:' ? https : http;
-    const req = transport.request(options, apiRes => {
-      let data = '';
-      apiRes.on('data', chunk => { data += chunk; });
-      apiRes.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          const text   = (parsed.response || '').replace(/```json|```/g, '').trim();
-          resolve(JSON.parse(text));
-        } catch (e) {
-          reject(new Error('Failed to parse Ollama response: ' + e.message));
-        }
-      });
-    });
-    req.on('error', err => reject(new Error('Ollama unreachable: ' + err.message)));
-    req.write(payload);
-    req.end();
-  });
-}
-
 function callOllamaChat(systemPrompt, messages) {
   return new Promise((resolve, reject) => {
-    const ollamaUrl   = process.env.OLLAMA_URL || 'http://localhost:11434';
-    const ollamaModel = process.env.OLLAMA_MODEL || 'llama3';
-    const url = new URL(ollamaUrl);
-
-    // Build Ollama chat messages format
-    const ollamaMessages = [
-      { role: 'system', content: systemPrompt },
-      ...messages.map(m => ({ role: m.role, content: m.content })),
-    ];
-
     const payload = JSON.stringify({
-      model:    ollamaModel,
-      messages: ollamaMessages,
-      stream:   false,
-      options:  { temperature: 0.4 },
+      model: 'llama3-8b-8192',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
     });
 
     const options = {
-      hostname: url.hostname,
-      port:     url.port || (url.protocol === 'https:' ? 443 : 80),
-      path:     '/api/chat',
+      hostname: 'api.groq.com',
+      path:     '/openai/v1/chat/completions',
       method:   'POST',
       headers:  {
         'Content-Type':   'application/json',
+        'Authorization':  'Bearer ' + process.env.GROQ_API_KEY,
         'Content-Length': Buffer.byteLength(payload),
       },
     };
 
-    const transport = url.protocol === 'https:' ? https : http;
-    const req = transport.request(options, apiRes => {
+    const req = https.request(options, res => {
       let data = '';
-      apiRes.on('data', chunk => { data += chunk; });
-      apiRes.on('end', () => {
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
         try {
           const parsed = JSON.parse(data);
-          resolve(parsed.message?.content || parsed.response || '');
-        } catch (e) {
-          reject(new Error('Failed to parse Ollama chat response'));
-        }
+          resolve(parsed.choices[0].message.content);
+        } catch (e) { reject(new Error('Groq parse error')); }
       });
     });
-    req.on('error', err => reject(new Error('Ollama unreachable: ' + err.message)));
-    req.write(payload);
-    req.end();
+    req.on('error', reject);
+    req.write(payload); req.end();
   });
 }
-
-// ─── Prompt builders ──────────────────────────────────────────────────────────
-
-function buildOnlinePrompt(symptoms, location) {
-  const loc = location
-    ? `The user is located at coordinates: lat ${location.lat}, lng ${location.lng} (${location.city || 'India'}).`
-    : 'The user is located in India (location not specified, use general Indian context).';
-
-  return `You are Arogya, a trusted AI medical assistant. ${loc}
-Patient symptoms: "${symptoms}"
-
-Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
-{
-  "summary": "2-3 sentence plain assessment of the likely condition",
-  "possibleConditions": ["condition1", "condition2", "condition3"],
-  "specialistType": "e.g. General Physician",
-  "urgency": "routine",
-  "doctors": [
-    {"name":"Dr. Indian Name","spec":"Specialisation","distance":"0.8 km","rating":4.7,"hospital":"Hospital Name near user location","type":"nearby"},
-    {"name":"Dr. Indian Name","spec":"Specialisation","distance":"1.5 km","rating":4.8,"hospital":"Hospital Name near user location","type":"nearby"},
-    {"name":"Dr. Indian Name","spec":"Specialisation","distance":"Remote","rating":5.0,"hospital":"Top hospital like Kokilaben or Fortis","type":"best"}
-  ],
-  "warning": ""
-}
-urgency must be one of: routine, soon, urgent, emergency.
-Use realistic Indian doctor names. Generate hospital names appropriate for the user's actual location if provided.`;
-}
-
-function buildOfflinePrompt(symptoms) {
-  return `You are Arogya, an experienced doctor giving safe home advice when no clinic is reachable.
-Patient symptoms: "${symptoms}"
-
-Return ONLY a valid JSON object (no markdown, no backticks, no extra text):
-{
-  "summary": "2-3 sentence doctor-perspective assessment",
-  "likelyCause": "most likely cause in plain language",
-  "remedies": [
-    "Detailed step 1 home remedy or action",
-    "Detailed step 2",
-    "Detailed step 3",
-    "Detailed step 4"
-  ],
-  "avoidList": ["thing to avoid 1", "thing to avoid 2", "thing to avoid 3"],
-  "seekDoctorIf": "specific condition or symptom that means they must see a doctor immediately",
-  "warning": ""
-}
-Include safe ayurvedic and evidence-based home remedies appropriate for Indian context.`;
-}
-
-function buildDoctorSystemPrompt(location, mode) {
-  const locCtx = location
-    ? `The patient is located at lat ${location.lat}, lng ${location.lng} (${location.city || 'India'}).`
-    : 'The patient is in India.';
-
-  if (mode === 'offline') {
-    return `You are Arogya, a compassionate and experienced doctor having a conversation with a patient who has no access to the internet or a clinic right now.
-${locCtx}
-Your job:
-- Ask about symptoms in a warm, friendly, doctor-like manner
-- Gather details one question at a time (duration, severity, associated symptoms, age, known conditions)
-- After enough information, give safe home remedies, Ayurvedic cures where appropriate, what to avoid, and when to urgently seek a doctor
-- Always be clear about what you can and cannot diagnose remotely
-- Never recommend prescription drugs; suggest OTC options by category only
-- Keep responses concise and conversational — this is a chat, not an essay
-- End serious responses with a reminder to see a real doctor when connectivity is restored`;
-  }
-
-  return `You are Arogya, a compassionate and knowledgeable AI doctor having a real-time conversation with a patient.
-${locCtx}
-Your job:
-- Talk like a warm, professional doctor — not like a chatbot
-- Ask follow-up questions to understand symptoms better (duration, severity, triggers, age, pre-existing conditions)
-- After gathering enough info, provide: likely condition, urgency level, what kind of specialist to see, and 2-3 nearby doctor suggestions appropriate to their location
-- Give brief, actionable advice for immediate relief while they arrange a doctor's visit
-- Be honest about uncertainty — say "this could be X or Y, a doctor needs to confirm"
-- Keep responses focused and conversational — 3-5 sentences max per reply unless explaining something complex
-- Never diagnose definitively — always recommend professional confirmation`;
-}
-
-module.exports = router;
