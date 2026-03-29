@@ -11,5 +11,8 @@
       "src": "/(.*)",
       "dest": "/public/index.html"
     }
-  ]
+  ],"engines": {
+  "node": "18.x"
+}
+  
 }
