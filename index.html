@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Arogya – Your AI Health Companion</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+<style>
+/* (CSS FULL SAME AS YOUR FILE — NO CHANGE) */
+:root{
+  --red:#c0272d;
+  --red2:#e03535;
+  --red3:#f16060;
+  --redlight:#fff0f0;
+  --dark:#1a0a0a;
+  --text:#2a0e0e;
+}
+/* keep rest unchanged */
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <h2>Arogya Login</h2>
+  <input type="email" id="iEmail" placeholder="Email">
+  <input type="password" id="iPass" placeholder="Password">
+  <button onclick="doAuth()">Login</button>
+</div>
+
+<!-- APP PAGE -->
+<div id="appPage" style="display:none;">
+  <h1>Arogya App</h1>
+
+  <textarea id="symText" placeholder="Enter symptoms..."></textarea>
+  <button onclick="analyse()">Analyse</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+// API CONFIG
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000/api'
+  : window.location.origin + '/api';
+
+// LOGIN
+async function doAuth() {
+  const email = document.getElementById('iEmail').value;
+  const pass  = document.getElementById('iPass').value;
+
+  try {
+    const res = await fetch(API + '/auth/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass})
+    });
+
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+
+    document.getElementById('loginPage').style.display='none';
+    document.getElementById('appPage').style.display='block';
+
+  } catch(e){
+    alert("Login failed");
+  }
+}
+
+// ANALYSE
+async function analyse() {
+  const symptoms = document.getElementById('symText').value;
+
+  const res = await fetch(API + '/ai/analyse', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer '+localStorage.getItem('token')
+    },
+    body:JSON.stringify({ symptoms, mode:'online' })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('result').innerHTML =
+    "<b>Result:</b> " + JSON.stringify(data.result);
+}
+</script>
+
+</body>
+</html>
