@@ -34,17 +34,25 @@ const allowedOrigins = [
   'http://127.0.0.1:5500',
 ].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, cb) => {
-    // allow requests with no origin (e.g. mobile apps, curl, Railway health checks)
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(new Error(`CORS blocked: ${origin}`));
-  },
-  credentials:    true,
-  methods:        ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// app.use(cors({
+//   origin: (origin, cb) => {
+//     // allow requests with no origin (e.g. mobile apps, curl, Railway health checks)
+//     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+//     cb(new Error(`CORS blocked: ${origin}`));
+//   },
+//   credentials:    true,
+//   methods:        ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// }));
 
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://arogy22.vercel.app'
+  ],
+  credentials: true
+}));
+app.options('*', cors());
 // ─── Body parsing ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
