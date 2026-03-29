@@ -17,68 +17,185 @@ function safeUser(u) {
 }
 
 // ─── POST /api/auth/register ──────────────────────────────────────────────────
+// router.post('/register', async (req, res) => {
+//   try {
+//     const { name, email, password } = req.body;
+
+//     if (!name || !email || !password)
+//       return res.status(400).json({ error: 'name, email and password are required' });
+//     if (password.length < 6)
+//       return res.status(400).json({ error: 'Password must be at least 6 characters' });
+
+//     const db       = getDB();
+//     const emailKey = email.toLowerCase().trim();
+//     const existing = await db.collection('users').findOne({ email: emailKey });
+//     if (existing) return res.status(409).json({ error: 'Email already registered' });
+
+//     const hash = await bcrypt.hash(password, 12);
+//     const id   = uuidv4();
+//     const now  = new Date().toISOString();
+
+//     const user = {
+//       id,
+//       name:       name.trim(),
+//       email:      emailKey,
+//       password:   hash,
+//       provider:   'local',
+//       avatar:     null,
+//       google_id:  null,
+//       created_at: now,
+//       updated_at: now,
+//     };
+//     await db.collection('users').insertOne(user);
+
+//     const token = generateAccessToken(user);
+//     res.status(201).json({ token, user: safeUser(user) });
+//   } catch (err) {
+//     console.error('Register error:', err);
+//     res.status(500).json({ error: 'Registration failed' });
+//   }
+// });
 router.post('/register', async (req, res) => {
   try {
+    console.log("BODY:", req.body);
+
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password)
-      return res.status(400).json({ error: 'name, email and password are required' });
-    if (password.length < 6)
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        error: 'Name, email and password are required'
+      });
+    }
 
-    const db       = getDB();
+    if (password.length < 6) {
+      return res.status(400).json({
+        error: 'Password must be at least 6 characters'
+      });
+    }
+
+    const db = getDB();
+
     const emailKey = email.toLowerCase().trim();
-    const existing = await db.collection('users').findOne({ email: emailKey });
-    if (existing) return res.status(409).json({ error: 'Email already registered' });
+
+    const existing = await db.collection('users').findOne({
+      email: emailKey
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        error: 'Email already registered'
+      });
+    }
 
     const hash = await bcrypt.hash(password, 12);
-    const id   = uuidv4();
-    const now  = new Date().toISOString();
 
     const user = {
-      id,
-      name:       name.trim(),
-      email:      emailKey,
-      password:   hash,
-      provider:   'local',
-      avatar:     null,
-      google_id:  null,
-      created_at: now,
-      updated_at: now,
+      id: uuidv4(),
+      name: name.trim(),
+      email: emailKey,
+      password: hash,
+      created_at: new Date().toISOString()
     };
+
     await db.collection('users').insertOne(user);
 
     const token = generateAccessToken(user);
-    res.status(201).json({ token, user: safeUser(user) });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: safeUser(user)
+    });
+
   } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('❌ Register error:', err);
+
+    res.status(500).json({
+      error: 'Registration failed',
+      details: err.message
+    });
   }
 });
 
 // ─── POST /api/auth/login ─────────────────────────────────────────────────────
+// router.post('/login', async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     if (!email || !password)
+//       return res.status(400).json({ error: 'email and password are required' });
+
+//     const db   = getDB();
+//     const user = await db.collection('users').findOne({ email: email.toLowerCase().trim() });
+//     if (!user || !user.password)
+//       return res.status(401).json({ error: 'Invalid credentials' });
+
+//     const match = await bcrypt.compare(password, user.password);
+//     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+//     const token = generateAccessToken(user);
+//     res.json({ token, user: safeUser(user) });
+//   } catch (err) {
+//     console.log(err)
+//     console.error('Login error:', err);
+//     res.status(500).json({ error: 'Login failed',  });
+//   }
+//   console.log("LOGIN BODY:", req.body);
+// });
+
+
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: 'email and password are required' });
+    console.log("LOGIN BODY:", req.body); // ✅ move here
 
-    const db   = getDB();
-    const user = await db.collection('users').findOne({ email: email.toLowerCase().trim() });
-    if (!user || !user.password)
-      return res.status(401).json({ error: 'Invalid credentials' });
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: 'email and password are required'
+      });
+    }
+
+    const db = getDB();
+    const emailKey = email.toLowerCase().trim();
+
+    const user = await db.collection('users').findOne({
+      email: emailKey
+    });
+
+    console.log("USER FOUND:", user); // ✅ debug
+
+    if (!user || !user.password) {
+      return res.status(401).json({
+        error: 'Invalid credentials'
+      });
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+
+    console.log("PASSWORD MATCH:", match); // ✅ debug
+
+    if (!match) {
+      return res.status(401).json({
+        error: 'Invalid credentials'
+      });
+    }
 
     const token = generateAccessToken(user);
-    res.json({ token, user: safeUser(user) });
+
+    res.json({
+      token,
+      user: safeUser(user)
+    });
+
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: 'Login failed' });
+
+    res.status(500).json({
+      error: 'Login failed',
+      details: err.message   // ✅ add this
+    });
   }
 });
-
 // ─── GET /api/auth/me ─────────────────────────────────────────────────────────
 router.get('/me', verifyToken, (req, res) => {
   res.json({ user: safeUser(req.user) });
