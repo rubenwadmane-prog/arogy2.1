@@ -1,6 +1,6 @@
 const jwt   = require('jsonwebtoken');
 const { getDB } = require('../db/database');
-const passport = require('../config/passport');
+// const passport = require('../config/passport');
 
 /**
  * Middleware: require a valid JWT in Authorization: Bearer <token>
