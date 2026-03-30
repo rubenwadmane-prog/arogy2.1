@@ -3,12 +3,19 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { v4: uuidv4 } = require('uuid');
 const { getDB }      = require('../db/database');
 
+// 🔥 ADD THIS LINE (fallback + debug)
+const CALLBACK_URL =
+  process.env.GOOGLE_CALLBACK_URL ||
+  "https://arogy21-production.up.railway.app/api/auth/google/callback";
+
+console.log("Using Google Callback URL:", CALLBACK_URL);
+
 passport.use(
   new GoogleStrategy(
     {
       clientID:     process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL:  process.env.GOOGLE_CALLBACK_URL,
+      callbackURL:  CALLBACK_URL, // ✅ use safe variable
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -23,21 +30,18 @@ passport.use(
         const now = new Date().toISOString();
         const proj = { projection: { _id: 0, password: 0 } };
 
-        // 1. Already linked via google_id
         let user = await db.collection('users').findOne({ google_id: googleId }, proj);
 
         if (!user) {
           const byEmail = await db.collection('users').findOne({ email }, proj);
 
           if (byEmail) {
-            // 2. Existing email account — link Google to it
             await db.collection('users').updateOne(
               { id: byEmail.id },
               { $set: { google_id: googleId, avatar, provider: 'google', updated_at: now } }
             );
             user = await db.collection('users').findOne({ id: byEmail.id }, proj);
           } else {
-            // 3. Brand new user via Google
             const id = uuidv4();
             const newUser = {
               id,
@@ -54,7 +58,6 @@ passport.use(
             user = await db.collection('users').findOne({ id }, proj);
           }
         } else {
-          // 4. Known Google user — refresh avatar in case it changed
           await db.collection('users').updateOne(
             { id: user.id },
             { $set: { avatar, updated_at: now } }
@@ -71,7 +74,6 @@ passport.use(
   )
 );
 
-// Session only used during OAuth redirect handshake — JWTs take over after
 passport.serializeUser((user, done) => done(null, user.id));
 
 passport.deserializeUser(async (id, done) => {
