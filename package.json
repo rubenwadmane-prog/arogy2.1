@@ -2,7 +2,7 @@
   "name": "arogya-backend",
   "version": "1.0.0",
   "description": "Arogya AI Health Companion – Backend API with Google OAuth, Anthropic + Ollama",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
