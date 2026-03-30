@@ -6,15 +6,15 @@ const helmet    = require('helmet');
 const morgan    = require('morgan');
 const session   = require('express-session');
 const rateLimit = require('express-rate-limit');
-const passport  = require('./config/passport');
+const passport  = require('./src/config/passport');
 const path      = require('path');
 const fs        = require('fs');
-const { connectDB } = require('./db/database');
+const { connectDB } = require('./src/db/database');
 
-const authRoutes         = require('./routes/auth');
-const consultationRoutes = require('./routes/consultations');
-const aiRoutes           = require('./routes/ai');
-const userRoutes         = require('./routes/users');
+const authRoutes         = require('./src/routes/auth');
+const consultationRoutes = require('./src/routes/consultations');
+const aiRoutes           = require('./src/routes/ai');
+const userRoutes         = require('./src/routes/users');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
