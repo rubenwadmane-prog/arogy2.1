@@ -11,10 +11,10 @@ const path      = require('path');
 const fs        = require('fs');
 const { connectDB } = require('./src/db/database');
 
-const authRoutes         = require('./src/routes/auth');
-const consultationRoutes = require('./src/routes/consultations');
-const aiRoutes           = require('./src/routes/ai');
-const userRoutes         = require('./src/routes/users');
+const authRoutes         = require('./src/auth');
+const consultationRoutes = require('./src/consultations');
+const aiRoutes           = require('./src/ai');
+const userRoutes         = require('./src/users');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
