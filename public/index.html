@@ -4,123 +4,705 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Arogya – Your AI Health Companion</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-
 <style>
 :root{--red:#c0272d;--red2:#e03535;--red3:#f16060;--redlight:#fff0f0;--redpale:#ffe4e4;--dark:#1a0a0a;--text:#2a0e0e;--muted:#8a5a5a;--white:#fff;--offwhite:#fafafa;--border:#f0d4d4;--shadow:0 8px 40px rgba(192,39,45,.10)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text);min-height:100vh}
 .page{min-height:100vh;display:flex;flex-direction:column}
-
 /* LOGIN */
-#loginPage{background:var(--dark);display:flex;align-items:center;justify-content:center;position:relative}
-.login-card{background:rgba(255,255,255,.05);border-radius:24px;padding:40px;width:100%;max-width:420px}
-
-/* BUTTON */
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;cursor:pointer}
-.btn-google{width:100%;background:#fff;border:none;border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer}
-
+#loginPage{background:var(--dark);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(192,39,45,.28) 0%,transparent 70%)}
+.login-card{position:relative;z-index:2;background:rgba(255,255,255,.05);border:1px solid rgba(240,96,96,.22);border-radius:24px;padding:48px 44px;width:100%;max-width:420px;backdrop-filter:blur(14px)}
+.logo-icon{width:68px;height:68px;background:linear-gradient(135deg,var(--red),var(--red2));border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:32px;box-shadow:0 0 40px rgba(192,39,45,.4)}
+.logo-name{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;color:#fff;letter-spacing:-1px;text-align:center}
+.logo-tag{font-size:11px;color:var(--red3);letter-spacing:2.5px;text-transform:uppercase;text-align:center;margin-bottom:32px;margin-top:4px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--red3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.fg input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(240,96,96,.22);border-radius:10px;padding:13px 15px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:all .2s}
+.fg input::placeholder{color:rgba(255,255,255,.28)}
+.fg input:focus{border-color:var(--red3);background:rgba(240,96,96,.09)}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;border:none;border-radius:10px;padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;transition:all .25s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(192,39,45,.5)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.divider{text-align:center;color:rgba(255,255,255,.18);font-size:13px;margin:16px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:rgba(255,255,255,.1)}
+.divider::before{left:0}.divider::after{right:0}
+.btn-google{width:100%;background:#fff;border:none;border-radius:10px;padding:12px 16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;color:#1a1a1a;transition:all .2s}
+.btn-google:hover{background:#f5f5f5;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.btn-google svg{width:20px;height:20px}
+.btn-ghost{width:100%;background:transparent;border:1px solid rgba(240,96,96,.3);color:var(--red3);border-radius:10px;padding:11px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:10px;transition:all .2s}
+.btn-ghost:hover{background:rgba(240,96,96,.08)}
+.auth-switch{text-align:center;margin-top:16px;font-size:13px;color:rgba(255,255,255,.4)}
+.auth-switch a{color:var(--red3);cursor:pointer;text-decoration:underline}
+.login-err{color:#ff9a8a;font-size:13px;margin-top:8px;text-align:center;display:none;padding:8px;background:rgba(255,100,80,.08);border-radius:8px}
+.reg-field{display:none}
 /* APP */
-#appPage{display:none;flex-direction:column;padding:20px}
-textarea{width:100%;padding:10px;margin-top:10px}
-button{margin-top:10px}
+#appPage{display:none;flex-direction:column}
+.hdr{background:var(--red);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(192,39,45,.3)}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-logo-icon{width:36px;height:36px;background:rgba(255,255,255,.18);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hdr-logo-name{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:#fff}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.st-badge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px}
+.st-badge.online{background:rgba(255,255,255,.2);color:#fff}
+.st-badge.offline{background:rgba(0,0,0,.25);color:#ffbaba}
+.st-dot{width:6px;height:6px;border-radius:50%}
+.st-badge.online .st-dot{background:#fff;animation:pulse 2s infinite}
+.st-badge.offline .st-dot{background:#ffbaba}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.loc-pill{font-size:11px;color:rgba(255,255,255,.75);padding:4px 9px;background:rgba(255,255,255,.1);border-radius:20px;white-space:nowrap}
+.uname{color:#fff;font-size:13px;font-weight:500}
+.ava-fb{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.3)}
+.ava-img{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.3);object-fit:cover;display:none}
+.btn-out{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:7px;padding:6px 13px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer}
+/* TABS */
+.tab-bar{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;max-width:880px;margin:0 auto;width:100%}
+.tab-btn{background:none;border:none;padding:13px 18px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red)}
+.tab-wrap{background:#fff;border-bottom:2px solid var(--border)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+/* MAIN */
+.main{flex:1;max-width:880px;margin:0 auto;width:100%;padding:26px 22px}
+.hero{text-align:center;margin-bottom:24px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,34px);font-weight:900;color:var(--dark);line-height:1.2;margin-bottom:7px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--muted);font-size:14px;max-width:440px;margin:0 auto}
+/* VOICE CARD */
+.vcard{background:#fff;border-radius:20px;padding:26px;box-shadow:var(--shadow);margin-bottom:18px;border:1.5px solid var(--border);transition:border-color .3s}
+.vcard.rec{border-color:var(--red2)}
+.vcard-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);margin-bottom:18px}
+.varea{display:flex;flex-direction:column;align-items:center;gap:14px}
+.mic{width:76px;height:76px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;font-size:28px;cursor:pointer;transition:all .25s;box-shadow:0 5px 24px rgba(192,39,45,.38)}
+.mic:hover{transform:scale(1.06)}
+.mic.active{background:linear-gradient(135deg,#7a0a0a,var(--red));animation:mp 1s infinite}
+@keyframes mp{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.mic-lbl{font-size:13px;color:var(--muted)}
+.waves{display:flex;align-items:center;gap:3px;height:26px;opacity:0;transition:opacity .3s}
+.waves.active{opacity:1}
+.wb{width:4px;background:var(--red);border-radius:4px;animation:wv 1s ease-in-out infinite}
+.wb:nth-child(1){height:8px}.wb:nth-child(2){height:17px;animation-delay:.1s}.wb:nth-child(3){height:24px;animation-delay:.2s}.wb:nth-child(4){height:17px;animation-delay:.3s}.wb:nth-child(5){height:8px;animation-delay:.4s}
+@keyframes wv{0%,100%{transform:scaleY(.6)}50%{transform:scaleY(1)}}
+.stext{width:100%;background:var(--redlight);border:1.5px solid var(--border);border-radius:12px;padding:13px 15px;font-size:15px;min-height:66px;color:var(--text);line-height:1.6;font-family:'DM Sans',sans-serif;resize:vertical;outline:none;transition:border-color .2s}
+.stext:focus{border-color:var(--red2)}
+.vactions{display:flex;gap:9px;width:100%}
+.btn-analyse{flex:1;background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;border:none;border-radius:10px;padding:13px 18px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-analyse:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(192,39,45,.38)}
+.btn-analyse:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-clr{background:var(--redlight);border:1.5px solid var(--border);color:var(--muted);border-radius:10px;padding:13px 15px;font-family:'DM Sans',sans-serif;font-size:15px;cursor:pointer}
+.mic-err{background:var(--redlight);border:1px solid var(--redpale);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--red);display:none;width:100%;line-height:1.6}
+.mic-err.show{display:block}
+/* RESULTS */
+.results{display:none;flex-direction:column;gap:14px;animation:fu .4s ease}
+.results.show{display:flex}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.rcard{background:#fff;border-radius:17px;padding:22px;box-shadow:var(--shadow);border:1.5px solid var(--border)}
+.rcard-hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rcard-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;background:var(--redlight);flex-shrink:0}
+.rcard-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted)}
+.rcard-body{font-size:14px;line-height:1.7;color:var(--text)}
+.rcard-body strong{color:var(--dark)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:11px;margin-top:5px}
+.dcard{background:var(--redlight);border-radius:13px;padding:15px;border:1.5px solid var(--border);transition:all .2s}
+.dcard:hover{border-color:var(--red2);transform:translateY(-2px)}
+.dcard-top{display:flex;gap:9px;margin-bottom:10px}
+.dava{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--red),var(--red3));display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.dname{font-weight:600;font-size:13px;color:var(--dark)}
+.dspec{font-size:11px;color:var(--muted);margin-top:2px}
+.dtags{display:flex;flex-wrap:wrap;gap:4px}
+.dtag{background:#fff;border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--muted);font-weight:500}
+.dtag.near{background:rgba(192,39,45,.07);border-color:rgba(192,39,45,.2);color:var(--red)}
+.dtag.best{background:#fff8ee;border-color:#f0d080;color:#8a6500}
+.drating{font-size:11px;color:#c09020;margin-top:6px;font-weight:600}
+.rem-list{counter-reset:s;list-style:none;padding:0;margin-top:7px}
+.rem-list li{counter-increment:s;display:flex;gap:11px;margin-bottom:11px;align-items:flex-start}
+.rem-list li::before{content:counter(s);min-width:23px;height:23px;background:var(--red);color:#fff;border-radius:7px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.warn-card{background:#fffbf2;border:1.5px solid #f0d9a0;border-radius:17px;padding:22px;display:none}
+.warn-card.show{display:block}
+/* CHAT */
+.chat-card{background:#fff;border-radius:20px;box-shadow:var(--shadow);border:1.5px solid var(--border);overflow:hidden}
+.chat-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.chat-hdr-icon{width:34px;height:34px;background:var(--redlight);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.chat-hdr-name{font-weight:600;font-size:14px;color:var(--dark)}
+.chat-hdr-sub{font-size:11px;color:var(--muted)}
+.chat-mbadge{margin-left:auto;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.chat-mbadge.online{background:var(--redlight);color:var(--red)}
+.chat-mbadge.offline{background:#fff8f0;color:#b06820}
+.btn-newchat{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:8px}
+.btn-newchat:hover{color:var(--red)}
+.chat-msgs{height:320px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:82%;padding:11px 14px;border-radius:15px;font-size:14px;line-height:1.6}
+.bubble.user{background:var(--red);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.bubble.doc{background:var(--redlight);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px;border:1px solid var(--border)}
+.bubble.typing{background:var(--redlight);color:var(--muted);align-self:flex-start;font-style:italic}
+.chat-input-row{display:flex;gap:8px;padding:11px 14px;border-top:1px solid var(--border)}
+.cinput{flex:1;background:var(--redlight);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;resize:none;height:42px}
+.cinput:focus{border-color:var(--red2)}
+.btn-cmic{background:var(--redlight);border:1.5px solid var(--border);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0}
+.btn-cmic.active{background:var(--red);border-color:var(--red);color:#fff}
+.btn-send{background:var(--red);color:#fff;border:none;border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0}
+.btn-send:hover{background:var(--red2)}
+.btn-send:disabled{opacity:.5;cursor:not-allowed}
+/* HISTORY */
+.hist-sec{margin-top:4px}
+.hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.hist-hdr h2{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark)}
+.btn-clrhist{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-clrhist:hover{color:var(--red)}
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hitem{background:#fff;border-radius:12px;padding:13px 17px;display:flex;align-items:flex-start;gap:11px;box-shadow:0 2px 8px rgba(0,0,0,.04);border:1.5px solid transparent;transition:all .2s;cursor:pointer}
+.hitem:hover{border-color:var(--red2);transform:translateX(3px)}
+.hicon{width:32px;height:32px;border-radius:9px;background:var(--redlight);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.hcontent{flex:1;min-width:0}
+.hq{font-size:13px;font-weight:500;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.hmeta{font-size:11px;color:var(--muted)}
+.hbadge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;flex-shrink:0;align-self:center}
+.hbadge.ob{background:var(--redlight);color:var(--red)}
+.hbadge.fb{background:#fff8f0;color:#b06820}
+.no-hist{text-align:center;padding:28px;color:var(--muted);font-size:14px}
+/* LOADER */
+.loader{display:none;flex-direction:column;align-items:center;justify-content:center;padding:34px;gap:13px}
+.loader.show{display:flex}
+.spin{width:38px;height:38px;border:3px solid var(--redpale);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-lbl{font-size:14px;color:var(--muted)}
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--dark);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s;border:1px solid rgba(240,96,96,.2);max-width:290px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:580px){
+  .login-card{padding:32px 18px;margin:12px}
+  .main{padding:16px 12px}
+  .vcard{padding:18px 13px}
+  .dgrid{grid-template-columns:1fr}
+  .uname,.loc-pill{display:none}
+}
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
 <div id="loginPage" class="page">
+  <div class="login-bg"></div>
   <div class="login-card">
-    <h2 style="color:white;text-align:center">Arogya Login</h2>
+    <div class="logo-icon">🩺</div>
+    <div class="logo-name">Arogya</div>
+    <div class="logo-tag">AI Health Companion</div>
 
-    <button class="btn-google" onclick="loginGoogle()">Continue with Google</button>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
 
-    <input type="email" id="iEmail" placeholder="Email"/>
-    <input type="password" id="iPass" placeholder="Password"/>
+    <div class="divider">or sign in with email</div>
 
-    <button class="btn-primary" onclick="doAuth()">Login</button>
-    <p id="loginErr" style="color:red"></p>
+    <div class="fg reg-field" id="regName"><label>Full Name</label><input type="text" id="iName" placeholder="Your name"/></div>
+    <div class="fg"><label>Email</label><input type="email" id="iEmail" placeholder="you@example.com" autocomplete="email"/></div>
+    <div class="fg"><label>Password</label><input type="password" id="iPass" placeholder="••••••••" autocomplete="current-password"/></div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn-primary" id="authBtn" onclick="doAuth()">Sign In →</button>
+    <button class="btn-ghost" onclick="guestLogin()">Continue as Guest</button>
+    <div class="auth-switch">
+      <span id="switchTxt">Don't have an account?</span>
+      <a onclick="toggleMode()"><span id="switchLnk">Register</span></a>
+    </div>
   </div>
 </div>
 
 <!-- APP -->
 <div id="appPage" class="page">
-  <h1>Arogya App</h1>
+  <header class="hdr">
+    <div class="hdr-logo">
+      <div class="hdr-logo-icon">🩺</div>
+      <div class="hdr-logo-name">Arogya</div>
+    </div>
+    <div class="hdr-right">
+      <div class="st-badge online" id="stBadge"><div class="st-dot"></div><span id="stTxt">Online</span></div>
+      <div class="loc-pill" id="locPill">📍 Locating…</div>
+      <div class="ava-fb" id="avaFb">U</div>
+      <img class="ava-img" id="avaImg" src="" alt="" onerror="this.style.display='none'"/>
+      <span class="uname" id="uname"></span>
+      <button class="btn-out" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
 
-  <textarea id="symText" placeholder="Enter symptoms..."></textarea>
-  <button onclick="analyse()">Analyse</button>
+  <div class="tab-wrap">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="tab('analyse',this)">🔍 Analyse</button>
+      <button class="tab-btn" onclick="tab('chat',this)">💬 Chat with Doctor</button>
+      <button class="tab-btn" onclick="tab('history',this)">📋 History</button>
+    </div>
+  </div>
 
-  <div id="result"></div>
+  <main class="main">
+    <div class="hero">
+      <h1>How are you feeling,<br/><span id="greet">friend</span>?</h1>
+      <p>Describe your symptoms by voice or text — Arogya will analyse and help you.</p>
+    </div>
+
+    <!-- ANALYSE TAB -->
+    <div id="tab-analyse" class="tab-pane active">
+      <div class="vcard" id="vcard">
+        <div class="vcard-title">Describe your symptoms</div>
+        <div class="varea">
+          <button class="mic" id="micBtn" onclick="toggleMic()">🎤</button>
+          <div class="waves" id="waves"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
+          <div class="mic-lbl" id="micLbl">Tap mic to speak</div>
+          <div class="mic-err" id="micErr"></div>
+          <textarea class="stext" id="symText" placeholder="Or type symptoms… e.g. 'Severe headache and fever for 2 days'" rows="3"></textarea>
+          <div class="vactions">
+            <button class="btn-analyse" id="analyseBtn" onclick="analyse()">✨ Analyse &amp; Find Help</button>
+            <button class="btn-clr" onclick="clearAll()">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="loader" id="loader"><div class="spin"></div><div class="spin-lbl" id="spinLbl">Analysing…</div></div>
+
+      <div class="results" id="results">
+        <div class="rcard">
+          <div class="rcard-hdr"><div class="rcard-icon">🧠</div><div class="rcard-title">AI Health Summary</div></div>
+          <div class="rcard-body" id="rSummary"></div>
+        </div>
+        <div class="rcard" id="rDocCard">
+          <div class="rcard-hdr"><div class="rcard-icon">👨‍⚕️</div><div class="rcard-title">Recommended Doctors Near You</div></div>
+          <div class="rcard-body">
+            <p id="rDocIntro" style="margin-bottom:11px;color:var(--muted);font-size:13px"></p>
+            <div class="dgrid" id="rDocGrid"></div>
+          </div>
+        </div>
+        <div class="rcard" id="rRemCard">
+          <div class="rcard-hdr"><div class="rcard-icon">🌿</div><div class="rcard-title">Home Remedies &amp; Self-Care</div></div>
+          <div class="rcard-body" id="rRem"></div>
+        </div>
+        <div class="warn-card" id="rWarn">
+          <div class="rcard-hdr"><div class="rcard-icon" style="background:#fff8ee">⚠️</div><div class="rcard-title" style="color:#8a6500">Important Notice</div></div>
+          <div class="rcard-body" id="rWarnBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div id="tab-chat" class="tab-pane">
+      <div class="chat-card">
+        <div class="chat-hdr">
+          <div class="chat-hdr-icon">👨‍⚕️</div>
+          <div><div class="chat-hdr-name">Dr. Arogya</div><div class="chat-hdr-sub">AI Health Assistant</div></div>
+          <div class="chat-mbadge online" id="chatBadge">Online</div>
+          <button class="btn-newchat" onclick="newChat()">+ New</button>
+        </div>
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="bubble doc">👋 Hello! I'm Dr. Arogya. Tell me what's bothering you and I'll help you understand what might be going on.</div>
+        </div>
+        <div class="chat-input-row">
+          <button class="btn-cmic" id="cmicBtn" onclick="toggleChatMic()">🎤</button>
+          <textarea class="cinput" id="cinput" placeholder="Type your message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+          <button class="btn-send" id="sendBtn" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" class="tab-pane">
+      <div class="hist-sec">
+        <div class="hist-hdr">
+          <h2>Past Consultations</h2>
+          <button class="btn-clrhist" onclick="clearHist()">Clear All</button>
+        </div>
+        <div class="hlist" id="hlist"><div class="no-hist">No consultations yet.</div></div>
+      </div>
+    </div>
+  </main>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// API CONFIG
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+// Auto-detect: same origin in production, localhost in dev
 const API = window.location.hostname === 'localhost'
   ? 'http://localhost:5000/api'
   : window.location.origin + '/api';
 
-// LOGIN
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let online   = navigator.onLine;
+let rec      = false;
+let recog    = null;
+let user     = null;
+let mode     = 'login';
+let loc      = null;   // {lat, lng, city}
+let chatHist = [];
+let cMicOn   = false;
+let cRecog   = null;
+
+// ── ONLINE/OFFLINE ────────────────────────────────────────────────────────────
+function updOnline() {
+  online = navigator.onLine;
+  const b = document.getElementById('stBadge'), t = document.getElementById('stTxt');
+  b.className = 'st-badge ' + (online ? 'online' : 'offline');
+  t.textContent = online ? 'Online' : 'Offline';
+  const cb = document.getElementById('chatBadge');
+  cb.textContent = online ? 'Online' : 'Offline';
+  cb.className = 'chat-mbadge ' + (online ? 'online' : 'offline');
+}
+window.addEventListener('online',  updOnline);
+window.addEventListener('offline', updOnline);
+updOnline();
+
+// ── GEOLOCATION ───────────────────────────────────────────────────────────────
+function getLocation() {
+  if (!navigator.geolocation) { document.getElementById('locPill').textContent = '📍 Unavailable'; return; }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude.toFixed(5);
+    const lng = pos.coords.longitude.toFixed(5);
+    loc = { lat, lng, city: null };
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const d = await r.json();
+      const city = d.address?.city || d.address?.town || d.address?.village || d.address?.county || 'India';
+      loc.city = city;
+      document.getElementById('locPill').textContent = '📍 ' + city;
+    } catch { document.getElementById('locPill').textContent = '📍 ' + lat + ',' + lng; }
+  }, () => { document.getElementById('locPill').textContent = '📍 Denied'; loc = null; }, { timeout: 8000 });
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function tab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'history') loadHist();
+}
+
+// ── OAUTH REDIRECT ────────────────────────────────────────────────────────────
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  const t = p.get('token');
+  if (t) {
+    localStorage.setItem('arogya_tk', t);
+    window.history.replaceState({}, '', window.location.pathname);
+    verifyLaunch(t);
+  } else {
+    const saved = localStorage.getItem('arogya_tk');
+    if (saved) verifyLaunch(saved);
+  }
+})();
+
+async function verifyLaunch(token) {
+  try {
+    const r = await api('/auth/me', { method: 'GET' }, token);
+    if (r.user) { user = r.user; launch(); }
+  } catch { localStorage.removeItem('arogya_tk'); }
+}
+
+// ── API HELPER ────────────────────────────────────────────────────────────────
+async function api(path, opts = {}, tk = null) {
+  const token = tk || localStorage.getItem('arogya_tk');
+  const hdrs = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) hdrs['Authorization'] = 'Bearer ' + token;
+  const res  = await fetch(API + path, { ...opts, headers: hdrs });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function toggleMode() {
+  mode = mode === 'login' ? 'register' : 'login';
+  const r = mode === 'register';
+  document.getElementById('regName').style.display    = r ? 'block' : 'none';
+  document.getElementById('authBtn').textContent      = r ? 'Create Account →' : 'Sign In →';
+  document.getElementById('switchTxt').textContent    = r ? 'Already have an account?' : "Don't have an account?";
+  document.getElementById('switchLnk').textContent    = r ? 'Sign In' : 'Register';
+  document.getElementById('loginErr').style.display   = 'none';
+}
+
 async function doAuth() {
   const email = document.getElementById('iEmail').value.trim();
   const pass  = document.getElementById('iPass').value.trim();
-
-  if (!email || !pass) {
-    document.getElementById('loginErr').innerText = "Enter email & password";
-    return;
-  }
-
+  if (!email || !pass) { showErr('Email and password required'); return; }
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true; btn.textContent = 'Please wait…';
   try {
-    const res = await fetch(API + '/auth/login', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,password:pass})
-    });
+    let data;
+    if (mode === 'register') {
+      const name = document.getElementById('iName').value.trim();
+      if (!name) { showErr('Name required'); return; }
+      data = await api('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password: pass }) });
+    } else {
+      data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password: pass }) });
+    }
+    localStorage.setItem('arogya_tk', data.token);
+    user = data.user; launch();
+  } catch (e) { showErr(e.message); }
+  finally { btn.disabled = false; btn.textContent = mode === 'login' ? 'Sign In →' : 'Create Account →'; }
+}
 
-    const data = await res.json();
+function showErr(m) { const e = document.getElementById('loginErr'); e.textContent = m; e.style.display = 'block'; }
+function loginGoogle() { window.location.href = API + '/auth/google'; }
+function guestLogin()  { user = { name: 'Guest', email: 'guest', provider: 'guest' }; launch(); }
 
-    if (!res.ok) throw new Error(data.error || "Login failed");
-
-    localStorage.setItem('token', data.token);
-
-    document.getElementById('loginPage').style.display='none';
-    document.getElementById('appPage').style.display='flex';
-
-  } catch(e){
-    document.getElementById('loginErr').innerText = e.message;
+function launch() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display   = 'flex';
+  const n = user.name === 'Guest' ? 'friend' : user.name.split(' ')[0];
+  document.getElementById('greet').textContent = n;
+  document.getElementById('uname').textContent = user.name;
+  if (user.avatar) {
+    const img = document.getElementById('avaImg');
+    img.src = user.avatar; img.style.display = 'block';
+    document.getElementById('avaFb').style.display = 'none';
+  } else {
+    document.getElementById('avaFb').textContent = (user.name || 'U')[0].toUpperCase();
   }
+  getLocation();
+  loadHist();
 }
 
-// GOOGLE LOGIN
-function loginGoogle() {
-  window.location.href = API + '/auth/google';
+async function logout() {
+  try { await api('/auth/logout', { method: 'POST' }); } catch {}
+  localStorage.removeItem('arogya_tk');
+  user = null; chatHist = [];
+  document.getElementById('appPage').style.display  = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('iEmail').value = '';
+  document.getElementById('iPass').value  = '';
+  clearAll();
 }
 
-// ANALYSE
+document.getElementById('iPass').addEventListener('keydown', e => { if (e.key === 'Enter') doAuth(); });
+
+// ── MIC ───────────────────────────────────────────────────────────────────────
+function toggleMic() { rec ? stopMic() : startMic(); }
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showMicErr('Use Chrome or Edge for voice input.'); return; }
+  hideMicErr();
+  recog = new SR(); recog.lang = 'en-IN'; recog.continuous = true; recog.interimResults = true;
+  recog.onstart = () => {
+    rec = true;
+    document.getElementById('micBtn').classList.add('active');
+    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById('waves').classList.add('active');
+    document.getElementById('micLbl').textContent = 'Listening…';
+    document.getElementById('vcard').classList.add('rec');
+  };
+  recog.onresult = e => {
+    let t = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
+    document.getElementById('symText').value = t;
+  };
+  recog.onerror = e => {
+    stopMic();
+    if (e.error === 'not-allowed') showMicErr('Mic blocked — allow microphone in browser settings.');
+    else showMicErr('Mic error. Type instead.');
+  };
+  recog.onend = () => stopMic();
+  try { recog.start(); } catch { showMicErr('Cannot start mic.'); }
+}
+function stopMic() {
+  rec = false;
+  if (recog) { try { recog.stop(); } catch {} }
+  document.getElementById('micBtn').classList.remove('active');
+  document.getElementById('micBtn').textContent = '🎤';
+  document.getElementById('waves').classList.remove('active');
+  document.getElementById('micLbl').textContent = 'Tap mic to speak';
+  document.getElementById('vcard').classList.remove('rec');
+}
+function showMicErr(m) { const e = document.getElementById('micErr'); e.textContent = '⚠️ ' + m; e.classList.add('show'); }
+function hideMicErr()   { document.getElementById('micErr').classList.remove('show'); }
+
+// ── ANALYSE ───────────────────────────────────────────────────────────────────
 async function analyse() {
-  const symptoms = document.getElementById('symText').value;
+  const text = document.getElementById('symText').value.trim();
+  if (!text) { toast('Please describe your symptoms first.'); return; }
+  stopMic();
+  document.getElementById('analyseBtn').disabled = true;
+  document.getElementById('loader').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('spinLbl').textContent = online
+    ? 'Analysing & finding doctors near you…'
+    : 'Generating home remedy advice…';
 
   try {
-    const res = await fetch(API + '/ai/analyse', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+localStorage.getItem('token')
-      },
-      body:JSON.stringify({ symptoms })
+    const m = online ? 'online' : 'offline';
+
+    // ALL calls go through backend — API key never in browser
+    const res = await api('/ai/analyse', {
+      method: 'POST',
+      body: JSON.stringify({ symptoms: text, mode: m, location: loc })
     });
 
-    const data = await res.json();
+    m === 'online' ? renderOnline(res.result) : renderOffline(res.result);
 
-    document.getElementById('result').innerHTML =
-      "<b>Result:</b><br>" + JSON.stringify(data.result, null, 2);
-
-  } catch(e){
-    alert("Error analysing");
+    if (user?.provider !== 'guest') {
+      api('/consultations', { method: 'POST', body: JSON.stringify({
+        symptoms: text, mode: m,
+        summary:    res.result.summary,
+        conditions: res.result.possibleConditions || [],
+        specialist: res.result.specialistType,
+        urgency:    res.result.urgency,
+        aiResponse: res.result,
+        doctors:    res.result.doctors || [],
+        location:   loc,
+      })}).catch(() => {});
+    }
+  } catch (e) {
+    toast('Error: ' + e.message);
+  } finally {
+    document.getElementById('loader').classList.remove('show');
+    document.getElementById('analyseBtn').disabled = false;
   }
 }
-</script>
 
+function renderOnline(d) {
+  document.getElementById('rSummary').innerHTML = `
+    <strong>${(d.possibleConditions || []).join(', ') || 'See below'}</strong>
+    <p style="margin-top:8px">${d.summary}</p>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">
+      Specialist: <strong style="color:var(--red)">${d.specialistType || '—'}</strong>&nbsp;|&nbsp;
+      Urgency: <strong style="color:${urgColor(d.urgency)}">${cap(d.urgency)}</strong>
+      ${loc?.city ? '&nbsp;|&nbsp;📍 ' + loc.city : ''}
+    </p>`;
+  document.getElementById('rDocIntro').textContent = `Best ${d.specialistType || 'doctors'} near ${loc?.city || 'you'}:`;
+  const g = document.getElementById('rDocGrid'); g.innerHTML = '';
+  (d.doctors || []).forEach(doc => {
+    g.innerHTML += `<div class="dcard"><div class="dcard-top"><div class="dava">👨‍⚕️</div><div><div class="dname">${esc(doc.name)}</div><div class="dspec">${esc(doc.spec||doc.specialisation||'')}</div></div></div><div class="dtags"><span class="dtag ${doc.type==='nearby'?'near':'best'}">${doc.type==='nearby'?'📍 Nearby':'⭐ Best'}</span><span class="dtag">🏥 ${esc(doc.hospital)}</span><span class="dtag">📏 ${esc(doc.distance)}</span></div><div class="drating">⭐ ${doc.rating}/5.0</div></div>`;
+  });
+  document.getElementById('rDocCard').style.display = 'block';
+  document.getElementById('rRemCard').style.display = 'none';
+  setWarn(d.warning); showRes();
+}
+
+function renderOffline(d) {
+  document.getElementById('rSummary').innerHTML = `
+    <strong>Likely: ${esc(d.likelyCause || 'See below')}</strong>
+    <p style="margin-top:8px">${esc(d.summary)}</p>
+    <p style="margin-top:8px;padding:8px 12px;background:var(--redlight);border-radius:8px;font-size:13px;color:var(--red)">
+      🌐 <strong>Offline mode</strong> — home remedy guidance. See a doctor when possible.
+    </p>`;
+  const avoid = (d.avoidList||[]).length ? `<p style="margin-top:11px"><strong>Avoid:</strong> ${d.avoidList.map(esc).join(', ')}</p>` : '';
+  const seek  = d.seekDoctorIf ? `<p style="margin-top:9px;padding:8px 12px;background:#fff8ee;border-radius:8px;font-size:13px"><strong>⚠️ See a doctor if:</strong> ${esc(d.seekDoctorIf)}</p>` : '';
+  document.getElementById('rRem').innerHTML = `<ul class="rem-list">${(d.remedies||[]).map(r=>`<li><span>${esc(r)}</span></li>`).join('')}</ul>${avoid}${seek}`;
+  document.getElementById('rRemCard').style.display = 'block';
+  document.getElementById('rDocCard').style.display = 'none';
+  setWarn(d.warning); showRes();
+}
+
+function showRes() {
+  document.getElementById('results').classList.add('show');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function setWarn(w) {
+  const e = document.getElementById('rWarn');
+  if (w) { document.getElementById('rWarnBody').textContent = w; e.classList.add('show'); }
+  else e.classList.remove('show');
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────────
+function newChat() {
+  chatHist = [];
+  document.getElementById('chatMsgs').innerHTML = '<div class="bubble doc">👋 Hello! I\'m Dr. Arogya. Tell me what\'s bothering you.</div>';
+}
+
+async function sendChat() {
+  const cinput = document.getElementById('cinput');
+  const text   = cinput.value.trim();
+  if (!text) return;
+  cinput.value = '';
+  addBubble('user', text);
+  chatHist.push({ role: 'user', content: text });
+  const typing = addBubble('typing', 'Dr. Arogya is typing…');
+  document.getElementById('sendBtn').disabled = true;
+  try {
+    const res = await api('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages: chatHist, mode: online ? 'online' : 'offline', location: loc })
+    });
+    typing.remove();
+    const reply = res.reply || 'Sorry, no response. Try again.';
+    addBubble('doc', reply);
+    chatHist.push({ role: 'assistant', content: reply });
+  } catch (e) {
+    typing.remove();
+    addBubble('doc', '⚠️ ' + e.message);
+  } finally {
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function addBubble(role, text) {
+  const msgs = document.getElementById('chatMsgs');
+  const div  = document.createElement('div');
+  div.className = 'bubble ' + role;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function toggleChatMic() { cMicOn ? stopChatMic() : startChatMic(); }
+function startChatMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Voice needs Chrome/Edge.'); return; }
+  cRecog = new SR(); cRecog.lang = 'en-IN'; cRecog.continuous = false; cRecog.interimResults = false;
+  cRecog.onstart  = () => { cMicOn = true; document.getElementById('cmicBtn').classList.add('active'); document.getElementById('cmicBtn').textContent = '⏹'; };
+  cRecog.onresult = e => { document.getElementById('cinput').value = e.results[0][0].transcript; };
+  cRecog.onerror  = () => stopChatMic();
+  cRecog.onend    = () => stopChatMic();
+  cRecog.start();
+}
+function stopChatMic() {
+  cMicOn = false;
+  if (cRecog) { try { cRecog.stop(); } catch {} }
+  document.getElementById('cmicBtn').classList.remove('active');
+  document.getElementById('cmicBtn').textContent = '🎤';
+}
+
+// ── HISTORY ───────────────────────────────────────────────────────────────────
+async function loadHist() {
+  if (user?.provider === 'guest') { renderHist([]); return; }
+  try {
+    const d = await api('/consultations?limit=30');
+    renderHist(d.consultations || []);
+  } catch { renderHist([]); }
+}
+
+function renderHist(items) {
+  const l = document.getElementById('hlist');
+  if (!items.length) { l.innerHTML = '<div class="no-hist">No consultations yet. Use Analyse or Chat to get started.</div>'; return; }
+  l.innerHTML = items.map(h => `
+    <div class="hitem">
+      <div class="hicon">${h.mode==='online'?'🩺':'🌿'}</div>
+      <div class="hcontent">
+        <div class="hq">${esc(h.symptoms||'')}</div>
+        <div class="hmeta">${h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}) : ''} ${h.location?.city?'· 📍 '+h.location.city:''}</div>
+      </div>
+      <span class="hbadge ${h.mode==='online'?'ob':'fb'}">${cap(h.mode)}</span>
+    </div>`).join('');
+}
+
+async function clearHist() {
+  if (user?.provider === 'guest') { renderHist([]); return; }
+  try { await api('/consultations', { method: 'DELETE' }); renderHist([]); toast('History cleared.'); }
+  catch { toast('Failed to clear.'); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('symText').value = '';
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('loader').classList.remove('show');
+  hideMicErr(); stopMic();
+}
+function toast(m) {
+  const t = document.getElementById('toast'); t.textContent = m;
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3200);
+}
+function urgColor(u) { return {routine:'#2a9d2a',soon:'#c09020',urgent:'#d06020',emergency:'#c0272d'}[u]||'var(--muted)'; }
+function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : ''; }
+function esc(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
+</script>
 </body>
 </html>
