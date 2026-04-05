@@ -8,98 +8,148 @@ const session   = require('express-session');
 const rateLimit = require('express-rate-limit');
 const passport  = require('./src/config/passport');
 const path      = require('path');
-const fs        = require('fs');
 const { connectDB } = require('./src/db/database');
 
-const authRoutes         = require('./src/auth');
-const consultationRoutes = require('./src/consultations');
-const aiRoutes           = require('./src/ai');
-const userRoutes         = require('./src/users');
+// ─── Routes ───────────────────────────────────────────────────────────────────
+const authRoutes         = require('./src/routes/auth');
+const consultationRoutes = require('./src/routes/consultations');
+const aiRoutes           = require('./src/routes/ai');
+const userRoutes         = require('./src/routes/users');
 
 const app  = express();
 
-// ✅ IMPORTANT FIX FOR RAILWAY / PROXY
+// ✅ IMPORTANT FIX (Railway / Proxy support)
 app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 5000;
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' }, contentSecurityPolicy: false }));
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization']
+// ─── Security ─────────────────────────────────────────────────────────────────
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
 }));
-app.options('*', cors());
 
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// ─── Body parsing ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 
+// ─── Logging ──────────────────────────────────────────────────────────────────
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
+
+// ─── Session (OAuth only) ─────────────────────────────────────────────────────
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'arogya_secret',
+  secret: process.env.SESSION_SECRET || 'arogya_fallback_secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 10 * 60 * 1000
-  }
+    sameSite: 'none', // ✅ REQUIRED for Google OAuth in production
+    maxAge: 10 * 60 * 1000,
+  },
 }));
 
+// ─── Passport ─────────────────────────────────────────────────────────────────
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ✅ IMPROVED RATE LIMITERS
+// ─── Rate limiting ────────────────────────────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50,
+  max: 20,
+  message: { error: 'Too many auth attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 20,
+  max: 10,
+  message: { error: 'Too many AI requests, please slow down' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-app.use('/api/auth',          authLimiter, authRoutes);
+// ─── API routes ───────────────────────────────────────────────────────────────
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/consultations', consultationRoutes);
-app.use('/api/ai',            aiLimiter, aiRoutes);
-app.use('/api/users',         userRoutes);
+app.use('/api/ai', aiLimiter, aiRoutes);
+app.use('/api/users', userRoutes);
 
-app.get('/api/health', (req, res) =>
-  res.json({ status: 'ok', time: new Date().toISOString() })
-);
+// ─── Health check ─────────────────────────────────────────────────────────────
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'Arogya API',
+    version: '1.0.0',
+    time: new Date().toISOString(),
+    db: 'mongodb',
+  });
+});
 
-// Serve frontend
+// ─── Serve frontend ───────────────────────────────────────────────────────────
 const frontendDist = path.join(process.cwd(), 'public');
 app.use(express.static(frontendDist));
 
+// ✅ SINGLE fallback (fixed duplicate issue)
 app.get('*', (req, res) => {
-  const index = path.join(frontendDist, 'index.html');
-  fs.existsSync(index)
-    ? res.sendFile(index)
-    : res.status(404).send('index.html not found in /public');
+  const fs = require('fs');
+  const indexFile = path.join(frontendDist, 'index.html');
+
+  if (fs.existsSync(indexFile)) {
+    res.sendFile(indexFile);
+  } else {
+    res.status(404).json({ error: 'Frontend not built yet' });
+  }
 });
 
-// Error handler
+// ─── Global error handler ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: err.message });
+  console.error('Unhandled error:', err.message);
+  res.status(500).json({
+    error: process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : err.message,
+  });
 });
 
-// Start server
+// ─── Start server ─────────────────────────────────────────────────────────────
 connectDB()
   .then(() => {
-    app.listen(PORT, () =>
-      console.log(`🩺 Arogya running on port ${PORT}`)
-    );
+    app.listen(PORT, () => {
+      console.log(`
+  ┌─────────────────────────────────────────────┐
+  │  🩺  Arogya API                              │
+  │  Port   : ${PORT}                            │
+  │  Mode   : ${process.env.NODE_ENV || 'development'} │
+  │  Health : http://localhost:${PORT}/api/health │
+  └─────────────────────────────────────────────┘
+      `);
+    });
   })
   .catch(err => {
-    console.error('MongoDB failed:', err.message);
+    console.error('❌ Failed to connect to MongoDB:', err.message);
     process.exit(1);
   });
 
