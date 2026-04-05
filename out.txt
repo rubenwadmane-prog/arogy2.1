@@ -1,0 +1,17 @@
+C:\Users\Riya\OneDrive\Desktop\arogya2.1\src\db\database.js:4
+if (!uri) throw new Error('MONGODB_URI must be set in environment variables');
+          ^
+
+Error: MONGODB_URI must be set in environment variables
+    at Object.<anonymous> (C:\Users\Riya\OneDrive\Desktop\arogya2.1\src\db\database.js:4:17)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+    at Object..js (node:internal/modules/cjs/loader:1943:10)
+    at Module.load (node:internal/modules/cjs/loader:1533:32)
+    at Module._load (node:internal/modules/cjs/loader:1335:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1556:12)
+    at require (node:internal/modules/helpers:152:16)
+    at Object.<anonymous> (C:\Users\Riya\OneDrive\Desktop\arogya2.1\src\config\passport.js:4:24)
+    at Module._compile (node:internal/modules/cjs/loader:1812:14)
+
+Node.js v24.14.1

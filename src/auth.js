@@ -1,9 +1,9 @@
 const router   = require('express').Router();
 const bcrypt   = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-const passport = require('./config/passport');
-const { getDB } = require('./db/database');
-const { generateAccessToken, verifyToken } = require('./middleware/auth');
+const passport = require('../config/passport');
+const { getDB } = require('../db/database');
+const { generateAccessToken, verifyToken } = require('../middleware/auth');
 
 function safeUser(u) {
   return {
